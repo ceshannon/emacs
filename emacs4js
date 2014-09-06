@@ -105,3 +105,44 @@ Replaces default behaviour of comment-dwim, when it inserts comment at the end o
 ;;;; 隐藏和显示ecb窗口
 (define-key global-map [(control f1)] 'ecb-hide-ecb-windows)
 (define-key global-map [(control f2)] 'ecb-show-ecb-windows)
+
+;;load yasnippet
+(add-to-list 'load-path "~/.emacs.d/site-lisp/yasnippet")
+(require 'yasnippet) 
+(yas-global-mode 1)
+
+(global-set-key (kbd "C-c ;") 'yas-expand)
+
+;;set auto-complete
+(require 'auto-complete)
+;; Make sure we can find the dictionaries
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/dict")
+;; Load the default configuration
+(require 'auto-complete-config)
+;; Use dictionaries by default
+(setq-default ac-sources (add-to-list 'ac-sources 'ac-source-dictionary))
+(global-auto-complete-mode t)
+;; Start auto-completion after 2 characters of a word
+(setq ac-auto-start 4)
+;; case sensitivity is important when finding matches
+(setq ac-ignore-case nil)
+
+;;show line number
+(add-to-list 'load-path "~/.emacs.d/site-lisp")
+(require 'linum)
+(global-linum-mode 1)
+
+(setq column-number-mode t)
+(setq make-backup-files nil)
+(setq-default make-backup-files nil) 
+
+(autoload 'shell-toggle "shell-toggle"
+  "Toggles between the *shell* buffer and whatever buffer you are editing." t)
+(autoload 'shell-toggle-cd "shell-toggle"
+  "Pops up a shell-buffer and insert a \"cd <file-dir>\" command." t)
+(global-set-key (kbd "C-c <f9>") 'shell-toggle-cd)
+
+;; ;;git-emacs support 
+;; (add-to-list 'load-path "~/.emacs.d/site-lisp/git-emacs/")
+;; (require 'git-emacs)
+

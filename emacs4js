@@ -1,0 +1,107 @@
+(add-to-list 'load-path "~/.emacs.d/site-lisp/")
+(global-set-key (kbd "C-c SPC") 'set-mark-command)
+
+;;smart tab
+(add-to-list 'load-path "~/.emacs.d/site-lisp/smart-tabs-mode")
+(autoload 'smart-tabs-mode "smart-tabs-mode"
+   "Intelligently indent with tabs, align with spaces!")
+(autoload 'smart-tabs-mode-enable "smart-tabs-mode")
+(autoload 'smart-tabs-advice "smart-tabs-mode")
+(autoload 'smart-tabs-insinuate "smart-tabs-mode")
+(smart-tabs-insinuate 'javascript)
+
+;;load yafolding
+(require 'yafolding)
+(define-key global-map (kbd "C-c '") 'yafolding)
+(define-key global-map (kbd "C-c C-f") 'yafolding-toggle-all)
+(define-key global-map (kbd "C-c C-f") 'yafolding-toggle-all-by-current-level)
+;;(add-hook 'indent-buffer-before-hook
+;;    (lambda ()
+;;      (yafolding-temp-toggle nil)))
+;;(add-hook 'indent-buffer-after-hook
+;;    (lambda ()
+;;      (yafolding-temp-toggle t)))
+
+
+;;find-file-suggest
+(require 'find-file-suggest)
+(global-set-key [(control x) (meta f)] 'find-file-suggest)
+(global-set-key [(control x) (meta g)] 'ffs-grep)
+
+(ffs-create-file-index "wtweb" "/home/liuh/code/wtweb" "\\.js$\\|\\.xml$" "\\.git$\\|node_modules\\|assets")
+
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
+(load-theme 'solarized-dark t)
+
+;;comment/ uncomment
+(defun qiang-comment-dwim-line (&optional arg)
+  "Replacement for the comment-dwim command.
+If no region is selected and current line is not blank and we are not at the end of the line,
+then comment current line.
+Replaces default behaviour of comment-dwim, when it inserts comment at the end of the line."
+  (interactive "*P")
+  (comment-normalize-vars)
+  (if (and (not (region-active-p)) (not (looking-at "[ \t]*$")))
+      (comment-or-uncomment-region (line-beginning-position) (line-end-position))
+    (comment-dwim arg)))
+(global-set-key "\M-;" 'qiang-comment-dwim-line)
+
+
+;; Smart copy, if no region active, it simply copy the current whole line
+(defadvice kill-line (before check-position activate)
+  (if (member major-mode
+              '(emacs-lisp-mode scheme-mode lisp-mode
+                                c-mode c++-mode objc-mode js-mode
+                                latex-mode plain-tex-mode))
+      (if (and (eolp) (not (bolp)))
+          (progn (forward-char 1)
+                 (just-one-space 0)
+                 (backward-char 1)))))
+
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region, copy a single line instead."
+  (interactive (if mark-active (list (region-beginning) (region-end))
+                 (message "Copied line")
+                 (list (line-beginning-position)
+                       (line-beginning-position 2)))))
+
+(defadvice kill-region (before slick-cut activate compile)
+  "When called interactively with no active region, kill a single line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (list (line-beginning-position)
+           (line-beginning-position 2)))))
+
+;; Copy line from point to the end, exclude the line break
+(defun qiang-copy-line (arg)
+  "Copy lines (as many as prefix argument) in the kill ring"
+  (interactive "p")
+  (kill-ring-save (point)
+                  (line-end-position))
+  ;; (line-beginning-position (+ 1 arg)))
+  (message "%d line%s copied" arg (if (= 1 arg) "" "s")))
+
+(global-set-key (kbd "M-k") 'qiang-copy-line)
+
+;;install ecb 
+(add-to-list 'load-path "~/.emacs.d/site-lisp/ecb")
+(require 'ecb)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ecb-options-version "2.40"))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+(global-set-key (kbd "C-c l") 'windmove-left)
+(global-set-key (kbd "C-c r") 'windmove-right)
+(global-set-key (kbd "C-c u") 'windmove-up)
+(global-set-key (kbd "C-c d") 'windmove-down)
+;;;; 隐藏和显示ecb窗口
+(define-key global-map [(control f1)] 'ecb-hide-ecb-windows)
+(define-key global-map [(control f2)] 'ecb-show-ecb-windows)
